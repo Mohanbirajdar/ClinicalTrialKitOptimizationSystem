@@ -93,7 +93,7 @@ export default function ShipmentDetailPage() {
       </div>
     );
 
-  const currentStepIndex = statusFlow.indexOf(shipment.status);
+  const currentStepIndex = statusFlow.indexOf(shipment.status ?? "preparing");
 
   return (
     <div>
