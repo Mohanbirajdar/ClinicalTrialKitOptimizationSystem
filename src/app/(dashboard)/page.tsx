@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Topbar } from "@/components/layout/topbar";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { WastageChart } from "@/components/dashboard/wastage-chart";
