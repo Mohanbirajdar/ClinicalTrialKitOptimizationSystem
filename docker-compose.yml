@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: clinical_kit_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: clinical_kit_db
+      MYSQL_USER: clinkit
+      MYSQL_PASSWORD: clinkit_pass
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: clinical_kit_app
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: clinkit
+      DB_PASSWORD: clinkit_pass
+      DB_NAME: clinical_kit_db
+      ML_SERVICE_URL: http://ml-service:8000
+      NEXTAUTH_SECRET: your_nextauth_secret_change_in_production
+      NEXTAUTH_URL: http://localhost:3000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npm run db:push && npm start"
+
+  ml-service:
+    build: ./ml-service
+    container_name: clinical_kit_ml
+    restart: unless-stopped
+    environment:
+      MODEL_PATH: /app/models/model.pkl
+    volumes:
+      - ml_models:/app/models
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  db_data:
+  ml_models:
