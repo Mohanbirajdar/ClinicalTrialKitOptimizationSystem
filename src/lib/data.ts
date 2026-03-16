@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { trials, sites, kits, shipments, kitUsage, alerts } from "@/db/schema";
 import { eq, desc, lt, gt, and, or, sql, gte } from "drizzle-orm";
 import { addDays, subMonths, format } from "date-fns";
+import type { Alert } from "@/types";
 
 // ─── TRIALS ──────────────────────────────────────────────────────────────────
 
@@ -261,7 +262,7 @@ export async function getDashboardSummary() {
     monthly_wastage,
     expiry_buckets,
     site_usage,
-    recent_alerts,
+    recent_alerts: recent_alerts as Alert[],
     active_trials: Number(activeTrialsRow?.count || 0),
     active_sites: Number(activeSitesRow?.count || 0),
     kits_expiring_30: Number(exp30?.count || 0),
