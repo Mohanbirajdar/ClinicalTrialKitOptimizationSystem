@@ -56,16 +56,20 @@ export async function getAllKits(status?: string) {
 }
 
 export async function getExpiringKits(days = 60) {
-  const today = new Date().toISOString().split("T")[0];
-  const future = addDays(new Date(), days).toISOString().split("T")[0];
-  const d30 = addDays(new Date(), 30).toISOString().split("T")[0];
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const in30 = addDays(now, 30);
+  const in60 = addDays(now, days);
+
+  const toDate = (v: unknown): Date =>
+    v instanceof Date ? v : new Date(v as string);
 
   const expiringKits = await db
     .select()
     .from(kits)
     .where(
       and(
-        lt(kits.expiry_date, future),
+        lt(kits.expiry_date, in60),
         gt(kits.quantity, 0),
         or(eq(kits.status, "available"), eq(kits.status, "low_stock"))
       )
@@ -75,12 +79,12 @@ export async function getExpiringKits(days = 60) {
   return {
     kits: expiringKits,
     grouped: {
-      expired: expiringKits.filter((k) => k.expiry_date < today),
+      expired: expiringKits.filter((k) => toDate(k.expiry_date) < now),
       within_30: expiringKits.filter(
-        (k) => k.expiry_date >= today && k.expiry_date < d30
+        (k) => toDate(k.expiry_date) >= now && toDate(k.expiry_date) < in30
       ),
       within_60: expiringKits.filter(
-        (k) => k.expiry_date >= d30 && k.expiry_date < future
+        (k) => toDate(k.expiry_date) >= in30 && toDate(k.expiry_date) < in60
       ),
     },
     total: expiringKits.length,

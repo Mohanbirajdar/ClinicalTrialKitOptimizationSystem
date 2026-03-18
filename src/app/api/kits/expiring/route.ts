@@ -25,15 +25,21 @@ export async function GET(req: NextRequest) {
       )
       .orderBy(kits.expiry_date);
 
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const in30 = addDays(now, 30);
+    const in60 = addDays(now, days);
+
+    const toDate = (v: unknown): Date =>
+      v instanceof Date ? v : new Date(v as string);
+
     const grouped = {
-      expired: expiringKits.filter((k) => k.expiry_date < today),
+      expired: expiringKits.filter((k) => toDate(k.expiry_date) < now),
       within_30: expiringKits.filter(
-        (k) => k.expiry_date >= today && k.expiry_date < addDays(new Date(), 30).toISOString().split("T")[0]
+        (k) => toDate(k.expiry_date) >= now && toDate(k.expiry_date) < in30
       ),
       within_60: expiringKits.filter(
-        (k) =>
-          k.expiry_date >= addDays(new Date(), 30).toISOString().split("T")[0] &&
-          k.expiry_date < future
+        (k) => toDate(k.expiry_date) >= in30 && toDate(k.expiry_date) < in60
       ),
     };
 
