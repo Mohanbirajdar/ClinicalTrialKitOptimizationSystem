@@ -13,24 +13,22 @@ export default async function DashboardPage() {
   return (
     <div>
       <Topbar title="Dashboard" />
-      <div className="p-6 space-y-6">
-        {/* Summary Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="col-span-2 md:col-span-4 flex gap-4 text-sm text-muted-foreground">
-            <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium">
-              {data.active_trials} Active Trials
-            </span>
-            <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium">
-              {data.active_sites} Active Sites
-            </span>
-            <span className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full font-medium">
-              {data.kits_expiring_30} Kits Expiring in 30 Days
-            </span>
-          </div>
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+        {/* Summary badges */}
+        <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+          <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium whitespace-nowrap">
+            {data.active_trials} Active Trials
+          </span>
+          <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium whitespace-nowrap">
+            {data.active_sites} Active Sites
+          </span>
+          <span className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full font-medium whitespace-nowrap">
+            {data.kits_expiring_30} Kits Expiring in 30 Days
+          </span>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <KpiCard
             title="Total Kits Shipped"
             value={data.total_shipped.toLocaleString()}
@@ -68,7 +66,7 @@ export default async function DashboardPage() {
 
         {/* Bottom Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-2">
+          <div className="md:col-span-2">
             <SiteUsageTable sites={data.site_usage} />
           </div>
           <AlertFeed alerts={data.recent_alerts} />

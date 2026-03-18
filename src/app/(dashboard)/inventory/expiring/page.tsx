@@ -14,8 +14,8 @@ export default async function ExpiringKitsPage() {
   return (
     <div>
       <Topbar title="Expiring Kits" />
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-3 gap-4">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
           {[
             { title: "Expired", kits: grouped.expired, color: "border-red-300 bg-red-50" },
             { title: "Expiring within 30 days", kits: grouped.within_30, color: "border-orange-300 bg-orange-50" },
@@ -25,7 +25,9 @@ export default async function ExpiringKitsPage() {
               <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold">{kits.length}</p>
-                <p className="text-sm text-muted-foreground mt-1">{kits.reduce((a: number, k: any) => a + k.quantity, 0)} units at risk</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {kits.reduce((a: number, k: any) => a + k.quantity, 0)} units at risk
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -38,35 +40,42 @@ export default async function ExpiringKitsPage() {
         ].map(({ title, kits, variant }) => kits.length > 0 && (
           <Card key={title}>
             <CardHeader className="pb-2 flex flex-row items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
+              <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
               <CardTitle className="text-base">{title} ({kits.length})</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Kit Type</TableHead>
-                    <TableHead>Lot Number</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Expiry Date</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(kits as any[]).map((kit: any) => {
-                    const expiry = getExpiryStatus(kit.expiry_date);
-                    return (
-                      <TableRow key={kit.id}>
-                        <TableCell className="font-medium">{kit.kit_type}</TableCell>
-                        <TableCell className="font-mono text-sm">{kit.lot_number}</TableCell>
-                        <TableCell className="font-bold text-red-600">{kit.quantity}</TableCell>
-                        <TableCell>{formatDate(kit.expiry_date)}</TableCell>
-                        <TableCell><Badge variant={expiry.variant}>{expiry.label}</Badge></TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Kit Type</TableHead>
+                      <TableHead className="hidden sm:table-cell">Lot Number</TableHead>
+                      <TableHead>Qty</TableHead>
+                      <TableHead className="hidden sm:table-cell">Expiry Date</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(kits as any[]).map((kit: any) => {
+                      const expiry = getExpiryStatus(kit.expiry_date);
+                      return (
+                        <TableRow key={kit.id}>
+                          <TableCell>
+                            <p className="font-medium text-sm">{kit.kit_type}</p>
+                            <p className="text-xs text-muted-foreground sm:hidden">{formatDate(kit.expiry_date)}</p>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell font-mono text-sm">{kit.lot_number}</TableCell>
+                          <TableCell className="font-bold text-red-600">{kit.quantity}</TableCell>
+                          <TableCell className="hidden sm:table-cell text-sm">{formatDate(kit.expiry_date)}</TableCell>
+                          <TableCell>
+                            <Badge variant={expiry.variant} className="text-xs">{expiry.label}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         ))}
