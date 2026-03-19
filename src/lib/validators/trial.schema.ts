@@ -15,6 +15,13 @@ export const CreateTrialSchema = z.object({
   description: z.string().optional().nullable(),
   sponsor: z.string().optional().nullable(),
   protocol_number: z.string().optional().nullable(),
+  drug_name: z.string().optional().nullable(),
+  drug_dosage: z.string().optional().nullable(),
+  drug_administration_route: z
+    .enum(["oral", "intravenous", "subcutaneous", "intramuscular", "topical", "inhalation"])
+    .optional()
+    .nullable(),
+  drug_class: z.string().optional().nullable(),
 });
 
 export const UpdateTrialSchema = CreateTrialSchema.partial();

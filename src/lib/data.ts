@@ -111,6 +111,140 @@ export async function getAllUsage(site_id?: string) {
   });
 }
 
+// ─── TRIAL ANALYTICS ─────────────────────────────────────────────────────────
+
+export async function getTrialAnalytics() {
+  const allTrials = await db.query.trials.findMany({
+    with: { sites: true },
+    orderBy: [desc(trials.created_at)],
+  });
+
+  const siteShipRows = await db
+    .select({
+      site_id: shipments.site_id,
+      kits_shipped: sql<number>`COALESCE(SUM(quantity), 0)`,
+    })
+    .from(shipments)
+    .where(sql`status != 'cancelled'`)
+    .groupBy(shipments.site_id);
+
+  const siteUsageRows = await db
+    .select({
+      site_id: kitUsage.site_id,
+      kits_used: sql<number>`COALESCE(SUM(kits_used), 0)`,
+      kits_wasted: sql<number>`COALESCE(SUM(kits_wasted), 0)`,
+      kits_returned: sql<number>`COALESCE(SUM(kits_returned), 0)`,
+    })
+    .from(kitUsage)
+    .groupBy(kitUsage.site_id);
+
+  return allTrials.map((trial) => {
+    const siteIds = trial.sites.map((s) => s.id);
+    const shipped = siteShipRows
+      .filter((r) => siteIds.includes(r.site_id))
+      .reduce((a, r) => a + Number(r.kits_shipped), 0);
+    const used = siteUsageRows
+      .filter((r) => siteIds.includes(r.site_id))
+      .reduce((a, r) => a + Number(r.kits_used), 0);
+    const wasted = siteUsageRows
+      .filter((r) => siteIds.includes(r.site_id))
+      .reduce((a, r) => a + Number(r.kits_wasted), 0);
+    const returned = siteUsageRows
+      .filter((r) => siteIds.includes(r.site_id))
+      .reduce((a, r) => a + Number(r.kits_returned), 0);
+    const enrolled = trial.sites.reduce((a, s) => a + (s.enrolled_patients ?? 0), 0);
+    const capacity = trial.sites.reduce((a, s) => a + s.patient_capacity, 0);
+
+    return {
+      id: trial.id,
+      trial_name: trial.trial_name,
+      trial_phase: trial.trial_phase,
+      status: trial.status,
+      sponsor: trial.sponsor,
+      drug_name: trial.drug_name,
+      drug_class: (trial as any).drug_class,
+      site_count: trial.sites.length,
+      active_sites: trial.sites.filter((s) => s.status === "active").length,
+      enrolled_patients: enrolled,
+      patient_capacity: capacity,
+      kits_shipped: shipped,
+      kits_used: used,
+      kits_wasted: wasted,
+      kits_returned: returned,
+      wastage_pct: shipped > 0 ? Math.round((wasted / shipped) * 1000) / 10 : 0,
+    };
+  });
+}
+
+// ─── SPONSOR ANALYTICS ───────────────────────────────────────────────────────
+
+export async function getSponsorAnalytics() {
+  const allTrials = await db.query.trials.findMany({
+    with: { sites: true },
+  });
+
+  const siteShipRows = await db
+    .select({
+      site_id: shipments.site_id,
+      kits_shipped: sql<number>`COALESCE(SUM(quantity), 0)`,
+    })
+    .from(shipments)
+    .where(sql`status != 'cancelled'`)
+    .groupBy(shipments.site_id);
+
+  const siteUsageRows = await db
+    .select({
+      site_id: kitUsage.site_id,
+      kits_used: sql<number>`COALESCE(SUM(kits_used), 0)`,
+      kits_wasted: sql<number>`COALESCE(SUM(kits_wasted), 0)`,
+      kits_returned: sql<number>`COALESCE(SUM(kits_returned), 0)`,
+    })
+    .from(kitUsage)
+    .groupBy(kitUsage.site_id);
+
+  const sponsorMap = new Map<string, {
+    sponsor: string;
+    trials: typeof allTrials;
+  }>();
+
+  for (const trial of allTrials) {
+    const key = trial.sponsor || "Unknown Sponsor";
+    if (!sponsorMap.has(key)) sponsorMap.set(key, { sponsor: key, trials: [] });
+    sponsorMap.get(key)!.trials.push(trial);
+  }
+
+  return Array.from(sponsorMap.values()).map(({ sponsor, trials: sponsorTrials }) => {
+    const siteIds = sponsorTrials.flatMap((t) => t.sites.map((s) => s.id));
+    const shipped = siteShipRows
+      .filter((r) => siteIds.includes(r.site_id))
+      .reduce((a, r) => a + Number(r.kits_shipped), 0);
+    const used = siteUsageRows
+      .filter((r) => siteIds.includes(r.site_id))
+      .reduce((a, r) => a + Number(r.kits_used), 0);
+    const wasted = siteUsageRows
+      .filter((r) => siteIds.includes(r.site_id))
+      .reduce((a, r) => a + Number(r.kits_wasted), 0);
+    const returned = siteUsageRows
+      .filter((r) => siteIds.includes(r.site_id))
+      .reduce((a, r) => a + Number(r.kits_returned), 0);
+    const enrolled = sponsorTrials.flatMap((t) => t.sites).reduce((a, s) => a + (s.enrolled_patients ?? 0), 0);
+
+    return {
+      sponsor,
+      trial_count: sponsorTrials.length,
+      active_trials: sponsorTrials.filter((t) => t.status === "active").length,
+      site_count: siteIds.length,
+      enrolled_patients: enrolled,
+      kits_shipped: shipped,
+      kits_used: used,
+      kits_wasted: wasted,
+      kits_returned: returned,
+      wastage_pct: shipped > 0 ? Math.round((wasted / shipped) * 1000) / 10 : 0,
+      trial_names: sponsorTrials.map((t) => t.trial_name),
+    };
+  }).sort((a, b) => b.kits_shipped - a.kits_shipped);
+}
+
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────
 
 export async function getDashboardSummary() {

@@ -33,6 +33,17 @@ export const trials = mysqlTable("trials", {
   description: text("description"),
   sponsor: varchar("sponsor", { length: 255 }),
   protocol_number: varchar("protocol_number", { length: 100 }),
+  drug_name: varchar("drug_name", { length: 255 }),
+  drug_dosage: varchar("drug_dosage", { length: 100 }),
+  drug_administration_route: mysqlEnum("drug_administration_route", [
+    "oral",
+    "intravenous",
+    "subcutaneous",
+    "intramuscular",
+    "topical",
+    "inhalation",
+  ]),
+  drug_class: varchar("drug_class", { length: 255 }),
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow().onUpdateNow(),
 });

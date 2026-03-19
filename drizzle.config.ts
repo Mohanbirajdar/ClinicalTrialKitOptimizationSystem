@@ -13,6 +13,6 @@ export default {
     user: process.env.DB_USER || "root",
     ...(password ? { password } : {}),
     database: process.env.DB_NAME || "clinical_kit_db",
-    ssl: host.includes("aivencloud.com") ? { rejectUnauthorized: false } : undefined,
+    ssl: host !== "localhost" && host !== "127.0.0.1" ? { rejectUnauthorized: false } : undefined,
   },
 } satisfies Config;

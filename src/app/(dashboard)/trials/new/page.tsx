@@ -19,6 +19,7 @@ export default function NewTrialPage() {
   const [form, setForm] = useState({
     trial_name: "", trial_phase: "", status: "planning",
     start_date: "", end_date: "", description: "", sponsor: "", protocol_number: "",
+    drug_name: "", drug_dosage: "", drug_administration_route: "", drug_class: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,6 +95,29 @@ export default function NewTrialPage() {
                 <div className="space-y-1.5">
                   <Label>Protocol Number</Label>
                   <Input value={form.protocol_number} onChange={e => setForm(p => ({ ...p, protocol_number: e.target.value }))} placeholder="e.g. PCT-2024-001" />
+                </div>
+                <div className="col-span-2 space-y-1.5">
+                  <Label>Drug Name</Label>
+                  <Input value={form.drug_name} onChange={e => setForm(p => ({ ...p, drug_name: e.target.value }))} placeholder="e.g. Investigational Drug XYZ-101" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Drug Dosage</Label>
+                  <Input value={form.drug_dosage} onChange={e => setForm(p => ({ ...p, drug_dosage: e.target.value }))} placeholder="e.g. 100mg twice daily" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Drug Class</Label>
+                  <Input value={form.drug_class} onChange={e => setForm(p => ({ ...p, drug_class: e.target.value }))} placeholder="e.g. Monoclonal Antibody, Kinase Inhibitor" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Administration Route</Label>
+                  <Select value={form.drug_administration_route} onValueChange={v => setForm(p => ({ ...p, drug_administration_route: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select route" /></SelectTrigger>
+                    <SelectContent>
+                      {["oral", "intravenous", "subcutaneous", "intramuscular", "topical", "inhalation"].map(r => (
+                        <SelectItem key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="col-span-2 space-y-1.5">
                   <Label>Description</Label>

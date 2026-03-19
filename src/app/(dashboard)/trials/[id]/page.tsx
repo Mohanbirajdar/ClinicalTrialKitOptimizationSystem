@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, MapPin, Plus } from "lucide-react";
+import { ArrowLeft, FlaskConical, MapPin, Plus } from "lucide-react";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { getTrialById } from "@/lib/data";
@@ -46,6 +46,27 @@ export default async function TrialDetailPage({ params }: { params: { id: string
             </CardContent>
           </Card>
         </div>
+
+        {(trial.drug_name || trial.drug_dosage || trial.drug_administration_route || trial.drug_class) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FlaskConical className="h-4 w-4" /> Drug Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div><p className="text-muted-foreground">Drug Name</p><p className="font-medium">{trial.drug_name || "—"}</p></div>
+              <div><p className="text-muted-foreground">Drug Class</p><p className="font-medium">{trial.drug_class || "—"}</p></div>
+              <div><p className="text-muted-foreground">Dosage</p><p className="font-medium">{trial.drug_dosage || "—"}</p></div>
+              <div>
+                <p className="text-muted-foreground">Administration Route</p>
+                {trial.drug_administration_route ? (
+                  <Badge variant="outline" className="mt-1 capitalize">{trial.drug_administration_route}</Badge>
+                ) : <p className="font-medium">—</p>}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">

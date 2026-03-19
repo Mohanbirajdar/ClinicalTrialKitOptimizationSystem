@@ -13,7 +13,11 @@ CREATE TABLE IF NOT EXISTS trials (
   end_date          DATE,
   description       TEXT,
   sponsor           VARCHAR(255),
-  protocol_number   VARCHAR(100),
+  protocol_number              VARCHAR(100),
+  drug_name                    VARCHAR(255),
+  drug_dosage                  VARCHAR(100),
+  drug_administration_route    ENUM('oral','intravenous','subcutaneous','intramuscular','topical','inhalation'),
+  drug_class                   VARCHAR(255),
   created_at        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id)

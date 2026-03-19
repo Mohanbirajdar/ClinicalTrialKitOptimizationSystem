@@ -72,6 +72,9 @@ export default async function TrialsPage() {
                             {trial.protocol_number && (
                               <p className="text-xs text-muted-foreground">{trial.protocol_number}</p>
                             )}
+                            {(trial as any).drug_class && (
+                              <p className="text-xs text-muted-foreground hidden sm:block">💊 {(trial as any).drug_class}</p>
+                            )}
                             {/* Show sponsor inline on mobile */}
                             <p className="text-xs text-muted-foreground md:hidden mt-0.5">{trial.sponsor || ""}</p>
                           </div>
